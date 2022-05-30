@@ -1,0 +1,17 @@
+{
+  "name": "electron-stargate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^18.3.0"
+  },
+  "dependencies": {
+    "moment": "^2.29.3"
+  }
+}

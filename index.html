@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <title>Entry Point Micro System - STARGATE</title>
+  <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+</head>
+
+<body style="background-color: #d9f5fb;">
+    
+  <div class="container" style="text-align: center; "> <!--background-color: #d9f5fb -->
+       <div id='title' style="width: 100%; height: 70px; margin-top: 30px;">
+            <div class="d-flex justify-content-center">
+                <img id="float-child" src="./img/star-gate.png" style="width: 70px; height: 50px; margin-top: 15px " >
+                <span id="float-child" style="font-weight: 700; font-size: 50px" >Star Gate</span>
+            </div>
+            
+        </div>
+        <div id="sub-tittle" class="mb-3">SISTEMA DE MARCAÇÃO DE PONTO</div>
+      
+       <div class="d-flex justify-content-center">
+            <h3 class="mr-2">Hoje: </h3><div id="data"></div>
+       </div>
+       <hr>
+      
+      <div style="margin-top: 15px;" >
+          <h5>Marcações de ponto encontradas para Hoje: </h5>
+          <div id="marcacoes">
+
+
+          </div>
+          
+      </div>
+      
+    <hr>
+    <form class="mt-5 ">
+      <h6 for="">Adicionar Marcação Rápida</h6>
+      <button type="submit" class="btn btn-primary">Marcar Agora</button>
+    </br>
+    </form>
+      
+   <!--    <form class="mt-3">
+      <label for="">Adicionar Marcação Manual</label>
+      <button type="submit" class="btn waves-effect waves-light ">Marcar Agora</button>
+      <button type="button" class="btn waves-effect deep-purple " onclick="loadDay()">Buscar Marcacoes de Hj</button>
+    </form> -->
+
+  </div>
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+  <script>
+    const electron = require('electron');
+    const {
+      ipcRenderer
+    } = electron;
+    let moment = require('moment');
+     moment.locale('pt-br');
+    const fs = require('fs');
+    const contentFilePath = './content.json'
+
+
+    const dataAtual = moment().format('L');
+    let dataHTML = `<h3>${dataAtual}</h3>`
+    document.getElementById("data").innerHTML = dataHTML;
+
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', submitForm)
+
+    let m = loadAll(); 
+    let mDay = loadDay();
+    let firstMark = false;
+    if(mDay === undefined || !mDay){
+      firstMark = true;
+      let marcacoesHTML = `<span>Ainda não existem marcações para hoje!</span>`
+      document.getElementById("marcacoes").innerHTML = marcacoesHTML;
+    }else{
+      printTable(mDay);
+    }
+
+    
+
+    let content = mDay || {data: null, marcacao1: null, marcacao2: null, 
+      marcacao3: null, marcacao4: null};
+
+    function submitForm(e) {
+      e.preventDefault();
+     
+      let dataAtual = moment().format('L');
+      let hora = moment().format('HH:mm:ss');
+      
+      if(content.data === null){
+        content.data = dataAtual;
+      }
+
+      if(content.marcacao1 === null){
+        content.marcacao1 = hora;
+      }else{
+        
+          if(content.marcacao2 === null && content.marcacao1 !== null){
+            content.marcacao2 = hora;
+          }else{
+                  if(content.marcacao3 === null && content.marcacao2 !== null){
+                    content.marcacao3 = hora;
+                  }else{
+                      if(content.marcacao4 === null && content.marcacao3 !== null){
+                        content.marcacao4 = hora;
+                      }
+                  }   
+          }
+      }
+
+      if(firstMark === true){
+        m.push(content)
+        console.log(m);
+        save(m);
+        firstMark = false;
+        let item = loadDay();
+        printTable(item);
+      }else{
+        let updatedM = m.map(d => {
+          if(d.data === content.data){
+            d.marcacao1 = content.marcacao1;
+            d.marcacao2 = content.marcacao2;
+            d.marcacao3 = content.marcacao3;
+            d.marcacao4 = content.marcacao4;
+          }
+
+          return d;
+        })
+
+        save(updatedM);
+        let item = loadDay();
+        printTable(item);
+      }
+
+
+     
+    }
+
+
+    function save(content){
+      const contentString = JSON.stringify(content);
+      return fs.writeFileSync(contentFilePath, contentString)
+    }
+
+    function loadAll(){
+      const fileBuffer = fs.readFileSync(contentFilePath, 'utf-8');
+      const contentJson = JSON.parse(fileBuffer);
+      return contentJson;
+    }
+
+    function loadDay(){
+      const fileBuffer = fs.readFileSync(contentFilePath, 'utf-8');
+      const contentJson = JSON.parse(fileBuffer);
+      const rs = contentJson.find((e) => e.data === dataAtual);
+      return rs;
+    }
+
+    function printTable(mDay){
+      let marcacoesHTML = `<table class="table mt-3">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">Entrada 1</th>
+                                    <th scope="col">Saída 1</th>
+                                    <th scope="col">Entrada 2</th>
+                                    <th scope="col">Saída 2</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <th scope="row">${mDay.marcacao1}</th>
+                                    <td scope="row">${mDay.marcacao2 ? mDay.marcacao2 : ' '}</td>
+                                    <td scope="row">${mDay.marcacao3 ? mDay.marcacao3 : ' '}</td>
+                                    <td scope="row">${mDay.marcacao4 ? mDay.marcacao4 : ' '}</td>
+                                  </tr>
+                                </tbody>
+                          </table>`
+      document.getElementById("marcacoes").innerHTML = marcacoesHTML;
+    }
+
+
+
+  </script>
+
+</body>
+
+</html>
