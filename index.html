@@ -108,15 +108,14 @@
       printTable(mDay);
     }
 
-    
-
     let content = mDay || {data: null, marcacao1: null, marcacao2: null, 
       marcacao3: null, marcacao4: null};
 
     function submitForm(e) {
       e.preventDefault();
-     
-      let dataAtual = moment().format('L');
+
+      if(content.marcacao4 === null){
+        let dataAtual = moment().format('L');
       let hora = moment().format('HH:mm:ss');
       
       if(content.data === null){
@@ -164,6 +163,12 @@
         printTable(item);
       }
 
+      }
+      else {
+        console.log('Todas as marcações já foram realizadas')
+      }
+     
+      
 
      
     }
