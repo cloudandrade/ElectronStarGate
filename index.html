@@ -86,7 +86,9 @@
     let moment = require('moment');
      moment.locale('pt-br');
     const fs = require('fs');
-    const contentFilePath = './content.json'
+   
+    const contentFilePath = './content.json';
+    const automation = require('./automation');
 
 
     const dataAtual = moment().format('L');
@@ -163,9 +165,28 @@
         printTable(item);
       }
 
+      if(process.env.AUTOMATION === 'true'){
+        let updatedItem = loadDay();
+        if(updatedItem.marcacao1 !== null && updatedItem.marcacao2 === null){
+          automation.runRMPortalAutomation(updatedItem.marcacao1, null, null, null, null);
+        }
+        else if(updatedItem.marcacao2 !== null && updatedItem.marcacao3 === null){
+          automation.runRMPortalAutomation(null, updatedItem.marcacao2, null, null, null);
+        }
+        else if(updatedItem.marcacao3 !== null && updatedItem.marcacao4 === null){
+          automation.runRMPortalAutomation(null, null, updatedItem.marcacao3, null, null);
+        }
+        else if(updatedItem.marcacao4 !== null){
+          automation.runRMPortalAutomation(null, null, null, updatedItem.marcacao4, null);
+        }
+      }
+    
+    
+
+
       }
       else {
-        console.log('Todas as marcações já foram realizadas')
+        alert('Todas as marcações já foram realizadas')
       }
      
       
