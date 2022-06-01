@@ -12,7 +12,7 @@ function createWindow() {
   //create browser window
   win = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 800,
     webPreferences: {
       nodeIntegration: true, //ativa a integração de pacotes do node 'require'
       contextIsolation: false,

@@ -16,6 +16,7 @@ async function runRMPortalAutomation(
   entry4,
   manualEntry
 ) {
+  let manualMode = manualEntry ? true : false;
   let entry = manualEntry
     ? manualEntry
     : {
@@ -25,6 +26,8 @@ async function runRMPortalAutomation(
         quatro: entry4,
       };
 
+  console.log('Entry recebido: ');
+  console.log(JSON.stringify(entry));
   let driver = await new Builder().forBrowser('chrome').build();
   await driver.get(process.env.TARGET_URL);
   try {
@@ -131,19 +134,41 @@ async function runRMPortalAutomation(
           By.name(`GB$l${day - 1}$txtJust`)
         );
 
-        //preenchendo os valores com as jornadas de trabalho
-        if (entry.um !== null && entry.um !== undefined) {
-          await entrada1.sendKeys(`${entry.um}`);
-        } else if (entry.dois !== null && entry.dois !== undefined) {
-          await entrada2.sendKeys(`${entry.dois}`);
-        } else if (entry.tres !== null && entry.tres !== undefined) {
-          await entrada3.sendKeys(`${entry.tres}`);
-        } else if (
-          entry.quatro !== null &&
-          entry.quatro !== undefined
-        ) {
-          await entrada4.sendKeys(`${entry.quatro}`);
+        if (manualMode === false) {
+          //preenchendo os valores com as jornadas de trabalho para marcação rapida
+          if (entry.um !== null && entry.um !== undefined) {
+            await entrada1.sendKeys(`${entry.um}`);
+          } else if (
+            entry.dois !== null &&
+            entry.dois !== undefined
+          ) {
+            await entrada2.sendKeys(`${entry.dois}`);
+          } else if (
+            entry.tres !== null &&
+            entry.tres !== undefined
+          ) {
+            await entrada3.sendKeys(`${entry.tres}`);
+          } else if (
+            entry.quatro !== null &&
+            entry.quatro !== undefined
+          ) {
+            await entrada4.sendKeys(`${entry.quatro}`);
+          }
+        } else {
+          if (entry.um !== null && entry.um !== undefined) {
+            await entrada1.sendKeys(`${entry.um}`);
+          }
+          if (entry.dois !== null && entry.dois !== undefined) {
+            await entrada2.sendKeys(`${entry.dois}`);
+          }
+          if (entry.tres !== null && entry.tres !== undefined) {
+            await entrada3.sendKeys(`${entry.tres}`);
+          }
+          if (entry.quatro !== null && entry.quatro !== undefined) {
+            await entrada4.sendKeys(`${entry.quatro}`);
+          }
         }
+
         await just.sendKeys('Jornada de trabalho');
 
         await new Promise((resolve) => setTimeout(resolve, 3000));

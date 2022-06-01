@@ -6,7 +6,47 @@
   <title>Entry Point Micro System - STARGATE</title>
   <!-- Compiled and minified CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <style>
+        /* Style the button that is used to open and close the collapsible content */
+    .collapsible {
+      margin-top: 10px;
+      background-color: rgb(87, 88, 88);
+      color: #fff;
+      cursor: pointer;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      text-align: center;
+      outline: none;
+      font-size: 15px;
+    }
 
+    .collapsible:after {
+      content: '\02795'; /* Unicode character for "plus" sign (+) */
+      font-size: 13px;
+      color: white;
+      float: right;
+      margin-left: 5px;
+    }
+
+    .active:after {
+      content: "\2796"; /* Unicode character for "minus" sign (-) */
+    }
+
+    /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+    .active, .collapsible:hover {
+      background-color: rgb(73, 73, 73);
+    }
+
+    /* Style the collapsible content. Note: hidden by default */
+    .content {
+      padding: 0 18px;
+      display: none;
+      overflow: hidden;
+      background-color: #f1f1f1;
+      transition: max-height 0.2s ease-out;
+    }
+  </style>
 </head>
 
 <body style="background-color: #d9f5fb;">
@@ -28,25 +68,43 @@
       
       <div style="margin-top: 15px;" >
           <h5>Marcações de ponto encontradas para Hoje: </h5>
-          <div id="marcacoes">
-
-
-          </div>
-          
+          <div id="marcacoes"></div>
       </div>
       
     <hr>
-    <form class="mt-5 ">
-      <h6 for="">Adicionar Marcação Rápida</h6>
-      <button type="submit" class="btn btn-primary">Marcar Agora</button>
+    <div class="mt-1 ">
+      <!-- <h7 >Adicionar Marcação Rápida</h7> -->
     </br>
-    </form>
-      
-   <!--    <form class="mt-3">
-      <label for="">Adicionar Marcação Manual</label>
-      <button type="submit" class="btn waves-effect waves-light ">Marcar Agora</button>
-      <button type="button" class="btn waves-effect deep-purple " onclick="loadDay()">Buscar Marcacoes de Hj</button>
-    </form> -->
+    <button id="fast-mark" type="button" class="btn btn-success" style="width: 300px !important; height: 50px !important;" onclick="fastMark()">Marcar Agora</button>
+    </br>
+  </div>
+   
+    <button id="collapse" type="button" class="collapsible" onclick="displayCollapse()">Realizar Marcação Manual</button>
+    <div id="collapse-content" class="content">
+      <form class="mb-2" id="manual-markdown">
+          <div class="mt-2 mb-3">
+            <div>
+              <label for="mark1fild">Entrada 1: </label>
+              <input id="mark1fild" type="text" style="width: 60px;" placeholder="08:00"/>
+
+              <label for="mark2fild" class="ml-2">Saída 1: </label>
+              <input id="mark2fild" type="text" style="width: 60px;" placeholder="12:00"/>
+            </div>
+            <div>
+              <label for="mark3fild">Entrada 2: </label>
+              <input id="mark3fild" type="text" style="width: 60px;" placeholder="13:00"/>
+
+              <label for="mark4fild" class="ml-2">Saída 2: </label>
+              <input id="mark4fild" type="text" style="width: 60px;" placeholder="17:00"/>
+            </div>
+
+            
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 300px !important; height: 50px !important;">Iniciar Marcação Manual Automatizada</button>
+      </form> 
+    </div>
+
+ 
 
   </div>
 
@@ -90,6 +148,27 @@
     const contentFilePath = './content.json';
     const automation = require('./automation');
 
+    let active = false;
+    var coll = document.getElementById('collapse');
+
+    function displayCollapse(){
+    
+      active = !active;
+      var content = document.getElementById('collapse-content');
+      if(active === true){
+        content.style.display = "block";
+      } else {
+        content.style.display = "none";
+      }
+      coll.classList.toggle("active")
+
+    }
+
+    
+    if(process.env.AUTOMATION === 'true'){
+      document.getElementById("fast-mark").innerHTML = 'Iniciar Marcação Automatizada';
+    }
+
 
     const dataAtual = moment().format('L');
     let dataHTML = `<h3>${dataAtual}</h3>`
@@ -114,84 +193,101 @@
       marcacao3: null, marcacao4: null};
 
     function submitForm(e) {
-      e.preventDefault();
+     e.preventDefault();
 
-      if(content.marcacao4 === null){
-        let dataAtual = moment().format('L');
-      let hora = moment().format('HH:mm:ss');
-      
-      if(content.data === null){
-        content.data = dataAtual;
-      }
+     const form = document.getElementById('manual-markdown');
 
-      if(content.marcacao1 === null){
-        content.marcacao1 = hora;
-      }else{
+      const mark1 = form.elements['mark1fild'];
+      const mark2 = form.elements['mark2fild'];
+      const mark3 = form.elements['mark3fild'];
+      const mark4 = form.elements['mark4fild'];
+
+      console.log("submit form");
+      console.log(`Entrada 1: ${mark1.value}, Saida 1: ${mark2.value}, Entrada 2: ${mark3.value}, Saida 2: ${mark4.value}`);
+
+      automation.runRMPortalAutomation(null, null, null, null, {
+        um: mark1.value.length ? mark1.value : null,
+        dois: mark2.value.length ? mark2.value : null,
+        tres: mark3.value.length ? mark3.value : null,
+        quatro: mark4.value.length ? mark4.value : null,
+      });
+
+
+     
+    }
+
+    function fastMark(){
         
-          if(content.marcacao2 === null && content.marcacao1 !== null){
-            content.marcacao2 = hora;
-          }else{
-                  if(content.marcacao3 === null && content.marcacao2 !== null){
-                    content.marcacao3 = hora;
-                  }else{
-                      if(content.marcacao4 === null && content.marcacao3 !== null){
-                        content.marcacao4 = hora;
-                      }
-                  }   
+
+        if(content.marcacao4 === null){
+          let dataAtual = moment().format('L');
+        let hora = moment().format('HH:mm:ss');
+
+        if(content.data === null){
+          content.data = dataAtual;
+        }
+
+        if(content.marcacao1 === null){
+          content.marcacao1 = hora;
+        }else{
+          
+            if(content.marcacao2 === null && content.marcacao1 !== null){
+              content.marcacao2 = hora;
+            }else{
+                    if(content.marcacao3 === null && content.marcacao2 !== null){
+                      content.marcacao3 = hora;
+                    }else{
+                        if(content.marcacao4 === null && content.marcacao3 !== null){
+                          content.marcacao4 = hora;
+                        }
+                    }   
+            }
+        }
+
+        if(firstMark === true){
+          m.push(content)
+          console.log(m);
+          save(m);
+          firstMark = false;
+          let item = loadDay();
+          printTable(item);
+        }else{
+          let updatedM = m.map(d => {
+            if(d.data === content.data){
+              d.marcacao1 = content.marcacao1;
+              d.marcacao2 = content.marcacao2;
+              d.marcacao3 = content.marcacao3;
+              d.marcacao4 = content.marcacao4;
+            }
+
+            return d;
+          })
+
+          save(updatedM);
+          let item = loadDay();
+          printTable(item);
+        }
+
+        if(process.env.AUTOMATION === 'true'){
+          let updatedItem = loadDay();
+          if(updatedItem.marcacao1 !== null && updatedItem.marcacao2 === null){
+            automation.runRMPortalAutomation(updatedItem.marcacao1, null, null, null, null);
           }
-      }
-
-      if(firstMark === true){
-        m.push(content)
-        console.log(m);
-        save(m);
-        firstMark = false;
-        let item = loadDay();
-        printTable(item);
-      }else{
-        let updatedM = m.map(d => {
-          if(d.data === content.data){
-            d.marcacao1 = content.marcacao1;
-            d.marcacao2 = content.marcacao2;
-            d.marcacao3 = content.marcacao3;
-            d.marcacao4 = content.marcacao4;
+          else if(updatedItem.marcacao2 !== null && updatedItem.marcacao3 === null){
+            automation.runRMPortalAutomation(null, updatedItem.marcacao2, null, null, null);
           }
-
-          return d;
-        })
-
-        save(updatedM);
-        let item = loadDay();
-        printTable(item);
-      }
-
-      if(process.env.AUTOMATION === 'true'){
-        let updatedItem = loadDay();
-        if(updatedItem.marcacao1 !== null && updatedItem.marcacao2 === null){
-          automation.runRMPortalAutomation(updatedItem.marcacao1, null, null, null, null);
+          else if(updatedItem.marcacao3 !== null && updatedItem.marcacao4 === null){
+            automation.runRMPortalAutomation(null, null, updatedItem.marcacao3, null, null);
+          }
+          else if(updatedItem.marcacao4 !== null){
+            automation.runRMPortalAutomation(null, null, null, updatedItem.marcacao4, null);
+          }
         }
-        else if(updatedItem.marcacao2 !== null && updatedItem.marcacao3 === null){
-          automation.runRMPortalAutomation(null, updatedItem.marcacao2, null, null, null);
-        }
-        else if(updatedItem.marcacao3 !== null && updatedItem.marcacao4 === null){
-          automation.runRMPortalAutomation(null, null, updatedItem.marcacao3, null, null);
-        }
-        else if(updatedItem.marcacao4 !== null){
-          automation.runRMPortalAutomation(null, null, null, updatedItem.marcacao4, null);
-        }
-      }
-    
-    
 
-
-      }
-      else {
-        alert('Todas as marcações já foram realizadas')
-      }
-     
-      
-
-     
+        }
+        else {
+          alert('Todas as marcações já foram realizadas')
+        }
     }
 
 
@@ -214,7 +310,7 @@
     }
 
     function printTable(mDay){
-      let marcacoesHTML = `<table class="table mt-3">
+      let marcacoesHTML = `<table class="table mt-2">
                                 <thead>
                                   <tr>
                                     <th scope="col">Entrada 1</th>
